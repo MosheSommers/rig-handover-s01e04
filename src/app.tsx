@@ -10,6 +10,9 @@ import { StatusBoard } from './views/status.js';
 export function createApp(config: RigConfig = loadConfig()) {
   const app = new Hono();
 
+  // The one readNight call: the page and the JSON share it (ADR 0001).
+  const digestFor = (night: string) => readNight(config.runsDir, night);
+
   app.get('/health', (c) => c.json({ ok: true, lane: lane().id }));
 
   app.get('/', (c) =>
@@ -22,7 +25,7 @@ export function createApp(config: RigConfig = loadConfig()) {
 
   app.get('/digest/:night', (c) => {
     const night = c.req.param('night');
-    const digest = readNight(config.runsDir, night);
+    const digest = digestFor(night);
     if (!digest) {
       return c.html(
         <Layout title={`digest · ${night}`} lane={lane()}>
@@ -36,6 +39,13 @@ export function createApp(config: RigConfig = loadConfig()) {
         <DigestPage night={night} digest={digest} />
       </Layout>,
     );
+  });
+
+  app.get('/api/digest/:night', (c) => {
+    const night = c.req.param('night');
+    const digest = digestFor(night);
+    if (!digest) return c.json({ error: `no run log for ${night}` }, 404);
+    return c.json({ night, rows: digest.rows, badLines: digest.badLines });
   });
 
   return app;
