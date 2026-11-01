@@ -17,8 +17,7 @@ export type NightDigest = {
   badLines: number; // lines that are not valid JSON or not a run line
 };
 
+// readNight(runsDir, night): NightDigest | null
 // null: no log file for that night (or not a YYYY-MM-DD night).
 // An empty file gives { rows: [], badLines: 0 }.
-export function readNight(runsDir: string, night: string): NightDigest | null {
-  throw new Error(`readNight not implemented (${runsDir}, ${night})`);
-}
+export { readNight } from './read.js';
